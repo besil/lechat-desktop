@@ -1,0 +1,40 @@
+{
+  "name": "lechat-desktop",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "A simple Electron app to load LeChat locally",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "electron": "^34.0.2",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "cloud.bernardinello.lechat-desktop",
+    "productName": "lechat-desktop",
+    "win": {
+      "icon": "icons/icon-512.png"
+    },
+    "mac": {
+      "icon": "icons/icon-512.png"
+    },
+    "linux": {
+      "icon": "icons/icon-512.png"
+    },
+    "files": [
+      "main.js",
+      "icons/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
