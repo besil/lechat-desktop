@@ -1,8 +1,10 @@
-const { app, Tray, Menu, BrowserWindow } = require('electron');
+const { app, Tray, Menu, BrowserWindow, globalShortcut, nativeImage } = require('electron');
 const path = require('path');
 
 let tray = null;
 let win = null;
+
+app.isQuiting = false;
 
 function createWindow() {
   win = new BrowserWindow({
@@ -10,7 +12,8 @@ function createWindow() {
     height: 800,
     show: true,
     webPreferences: {
-      nodeIntegration: true
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js') // Use a preload script
     }
   });
 
@@ -21,47 +24,39 @@ function createWindow() {
       event.preventDefault();
       win.hide();
     }
-    return false;
   });
+}
+
+function createTray() {
+  const iconPath = path.join(__dirname, 'icons', 'AppIcon-20@2x.png');
+  tray = new Tray(iconPath);
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Open App', click: () => win.show() },
+    { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
+  ]);
+
+  tray.setContextMenu(contextMenu);
+  tray.setToolTip('LeChat Desktop App');
+
+  tray.on('click', () => win.isVisible() ? win.hide() : win.show());
 }
 
 app.whenReady().then(() => {
   createWindow();
+  createTray();
 
-  const iconPath = path.join(__dirname, 'icons', 'AppIcon-20@2x.png');
-  tray = new Tray(iconPath);
-
-  // Create a context menu for the tray
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open App',
-      click: () => {
-        win.show();
-      }
-    },
-    {
-      label: 'Quit',
-      click: () => {
-        app.isQuiting = true;
-        app.quit();
-      }
-    }
-  ]);
-
-  tray.setContextMenu(contextMenu);
-
-  tray.setToolTip('LeChat Desktop App');
-
-  tray.on('click', () => {
-    if (win.isVisible()) {
-      win.hide();
-    } else {
-      win.show();
-    }
-  });
-  const nativeImage = require('electron').nativeImage
-  const image = nativeImage.createFromPath('icons/icon-512.png')
+  const image = nativeImage.createFromPath('icons/icon-512.png');
   app.dock.setIcon(image);
+
+  globalShortcut.register('Command+Q', () => {
+    app.isQuiting = true;
+    app.quit();
+  });
+
+  app.on('before-quit', () => {
+    app.isQuiting = true;
+  });
 });
 
 app.on('window-all-closed', () => {
